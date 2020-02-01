@@ -4,6 +4,7 @@ ai = "O"
 current_player = player
 avaliable = []
 scores = {'O': 1, 'X': -1, 'tie': 0}
+game_has_ended = False
 
 w = None
 h = None
@@ -15,43 +16,44 @@ def setup():
     h = height / 3
     
 def draw():
-    global w, h
-    background(255, 255, 255)
+    global w, h, game_has_ended
     
-    strokeWeight(6)
-    line(w, 0, w, height)
-    line(w*2, 0, w*2, height)
-    line(0, h, width, h)
-    line(0, h*2, width, h*2)
+    if not game_has_ended:
+        background(255, 255, 255)
+        
+        strokeWeight(6)
+        line(w, 0, w, height)
+        line(w*2, 0, w*2, height)
+        line(0, h, width, h)
+        line(0, h*2, width, h*2)
+        
+        if current_player == ai:
+            ai_turn()
+        
+        for i in range(3):
+            for j in range(3):
+                spot = board[i][j]
+                x = w * i + w / 2
+                y = h * j + h / 2
+                textAlign(CENTER, CENTER)
+                textSize(100)
+                fill(0)
+                if spot == player:                
+                    text("X", x, y)
+                elif spot == ai:
+                    text("O", x, y)
     
-    if current_player == ai:
-        ai_turn()
-    
-    for i in range(3):
-        for j in range(3):
-            spot = board[i][j]
-            x = w * i + w / 2
-            y = h * j + h / 2
-            textAlign(CENTER, CENTER)
-            textSize(100)
-            fill(0)
-            if spot == player:                
-                text("X", x, y)
-            elif spot == ai:
-                text("O", x, y)
-
-    if has_won("O"):
-        print("The AI has won!")
-        noLoop()
-        
-    if has_won("X"):
-        print("You have won!")
-        noLoop()
-        
-    if is_tie():
-        print("Tie!")
-        noLoop()
-        
+        if has_won("O"):
+            draw_score("The AI won!")
+            game_has_ended = True
+            
+        elif has_won("X"):
+            draw_wcore("You won!")
+            game_has_ended = True
+            
+        elif is_tie():
+            draw_score("Tie!")
+            game_has_ended = True
     
                 
 def has_won(current):
@@ -137,8 +139,24 @@ def ai_turn():
     board[best_move[0]][best_move[1]] = "O"
     current_player = player
     
+def draw_score(message):
+    background(0)
+    textAlign(CENTER, CENTER)
+    textSize(100)
+    fill(255)
+    text(message, width / 2, height / 2)
+    textSize(40)
+    textAlign(LEFT, LEFT)
+    text("(Press left mouse button to restart)", width * 0.1, height / 1.5)
+    
+def reset_game():
+    global board, game_has_ended, current_player
+    board = [["", "", ""],["", "", ""], ["", "", ""]]
+    current_player = player
+    game_has_ended = False
+    
 def mousePressed():
-    global board, current_player, ai, player, w, h
+    global board, current_player, ai, player, w, h, game_has_ended
     
     if current_player == player:
         player_row = floor(mouseX / w)
@@ -146,4 +164,7 @@ def mousePressed():
         if board[player_row][player_col] != "X" and board[player_row][player_col] != "O":
             board[player_row][player_col] = "X"
             current_player = ai
+            
+    if game_has_ended:
+        reset_game()
             
